@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>私の作業記録</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Hiragino Sans', 'Meiryo', sans-serif;
+            background: #f5f6fa;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: #2c3e50;
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 1.8em;
+            margin-bottom: 8px;
+        }
+        
+        .header p {
+            opacity: 0.9;
+            font-size: 1.1em;
+        }
+        
+        .content {
+            padding: 30px;
+        }
+        
+        .add-work {
+            background: #ecf0f1;
+            padding: 25px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+        }
+        
+        .add-work h2 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-size: 1.3em;
+        }
+        
+        .input-row {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #2c3e50;
+            font-weight: 500;
+        }
+        
+        .input-group input,
+        .input-group select {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #bdc3c7;
+            border-radius: 6px;
+            font-size: 1em;
+        }
+        
+        .input-group input:focus,
+        .input-group select:focus {
+            border-color: #3498db;
+            outline: none;
+        }
+        
+        .add-btn {
+            background: #27ae60;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1em;
+            margin-top: 15px;
+        }
+        
+        .add-btn:hover {
+            background: #219a52;
+        }
+        
+        .work-list {
+            margin-bottom: 30px;
+        }
+        
+        .work-list h2 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-size: 1.3em;
+        }
+        
+        .work-item {
+            background: #fff;
+            border: 1px solid #ecf0f1;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 12px;
+            position: relative;
+            min-height: 90px;
+        }
+        
+        .work-name {
+            font-size: 1.1em;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 8px;
+        }
+        
+        .work-details {
+            color: #7f8c8d;
+            font-size: 0.95em;
+        }
+        
+        .work-time {
+            position: absolute;
+            right: 20px;
+            top: 20px;
+            background: #3498db;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 15px;
+            font-size: 0.9em;
+        }
+        
+        .delete-btn {
+            position: absolute;
+            right: 20px;
+            bottom: 15px;
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.8em;
+        }
+        
+        .summary {
+            background: #3498db;
+            color: white;
+            padding: 25px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        
+        .summary h2 {
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+        
+        .summary-numbers {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .summary-item {
+            text-align: center;
+        }
+        
+        .summary-number {
+            font-size: 2em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .summary-label {
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+        
+        .chart-section {
+            background: white;
+            padding: 25px;
+            border-radius: 8px;
+            border: 1px solid #ecf0f1;
+        }
+        
+        .chart-section h2 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            text-align: center;
+            font-size: 1.3em;
+        }
+        
+        .diagnosis-section {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            border-left: 4px solid #3498db;
+        }
+        
+        .diagnosis-section h2 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-size: 1.3em;
+        }
+        
+        .diagnosis-item {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            border-left: 4px solid #ddd;
+        }
+        
+        .diagnosis-item.high {
+            border-left-color: #27ae60;
+            background: #f8fff8;
+        }
+        
+        .diagnosis-item.medium {
+            border-left-color: #f39c12;
+            background: #fffbf0;
+        }
+        
+        .diagnosis-item.low {
+            border-left-color: #e74c3c;
+            background: #fff5f5;
+        }
+        
+        .diagnosis-title {
+            font-size: 1.1em;
+            font-weight: 600;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .diagnosis-score {
+            background: #3498db;
+            color: white;
+            padding: 4px 10px;
+            border-radius: 15px;
+            font-size: 0.9em;
+        }
+        
+        .diagnosis-score.high { background: #27ae60; }
+        .diagnosis-score.medium { background: #f39c12; }
+        .diagnosis-score.low { background: #e74c3c; }
+        
+        .diagnosis-details {
+            color: #7f8c8d;
+            margin-bottom: 10px;
+        }
+        
+        .diagnosis-recommendation {
+            color: #2c3e50;
+            font-weight: 500;
+            background: rgba(52, 152, 219, 0.1);
+            padding: 10px;
+            border-radius: 4px;
+        }
+        
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin: 20px 0;
+        }
+        
+        .no-data {
+            text-align: center;
+            color: #95a5a6;
+            padding: 40px;
+            font-size: 1.1em;
+        }
+        
+        .reset-btn {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-top: 20px;
+            float: right;
+        }
+        
+        @media (max-width: 600px) {
+            .input-row {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+            
+            .summary-numbers {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+            
+            .work-time,
+            .automation-score {
+                position: static;
+                display: inline-block;
+                margin-top: 10px;
+                margin-right: 10px;
+            }
+            
+            .delete-btn {
+                position: static;
+                margin-top: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🤖 RPA/自動化 診断ツール</h1>
+            <p>作業を記録すると、RPA・自動化・DX化の可能性を即座に診断します</p>
+        </div>
+        
+        <div class="content">
+            <!-- 作業追加セクション -->
+            <div class="add-work">
+                <h2>作業を記録する</h2>
+                <div class="input-row">
+                    <div class="input-group">
+                        <label>どんな作業ですか？</label>
+                        <input type="text" id="workName" placeholder="例：メールチェック">
+                    </div>
+                    <div class="input-group">
+                        <label>どのくらいの頻度？</label>
+                        <select id="frequency">
+                            <option value="">選んでください</option>
+                            <option value="5">毎日</option>
+                            <option value="3">週3回くらい</option>
+                            <option value="2">週2回くらい</option>
+                            <option value="1">週1回</option>
+                            <option value="0.5">月に数回</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label>1回何分くらい？</label>
+                        <input type="number" id="duration" placeholder="30" min="1">
+                    </div>
+                </div>
+                <button class="add-btn" onclick="addWork()">記録する</button>
+            </div>
+            
+            <!-- 記録した作業一覧 -->
+            <div class="work-list">
+                <h2>記録した作業</h2>
+                <div id="workItems"></div>
+            </div>
+            
+            <!-- 合計時間表示 -->
+            <div class="summary" id="summary" style="display: none;">
+                <h2>あなたの作業時間</h2>
+                <div class="summary-numbers">
+                    <div class="summary-item">
+                        <div class="summary-number" id="weeklyHours">0</div>
+                        <div class="summary-label">週間合計（時間）</div>
+                    </div>
+                    <div class="summary-item">
+                        <div class="summary-number" id="monthlyHours">0</div>
+                        <div class="summary-label">月間合計（時間）</div>
+                    </div>
+                    <div class="summary-item">
+                        <div class="summary-number" id="taskCount">0</div>
+                        <div class="summary-label">記録した作業数</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 診断結果 -->
+            <div class="diagnosis-section" id="diagnosis" style="display: none;">
+                <h2>🤖 自動化診断結果</h2>
+                <div id="diagnosisResults"></div>
+            </div>
+            
+            <!-- グラフ表示 -->
+            <div class="chart-section">
+                <h2>作業時間の内訳（色は自動化可能性を表示）</h2>
+                <div class="chart-container">
+                    <canvas id="workChart" style="display: none;"></canvas>
+                    <div class="no-data" id="noData">作業を記録すると、時間の使い方がグラフで見えます</div>
+                </div>
+                <div class="chart-legend" style="margin-top: 15px; text-align: center; font-size: 0.9em; color: #7f8c8d;">
+                    <span style="display: inline-block; width: 12px; height: 12px; background: #27ae60; border-radius: 50%; margin-right: 5px;"></span>自動化推奨
+                    <span style="display: inline-block; width: 12px; height: 12px; background: #f39c12; border-radius: 50%; margin: 0 5px 0 15px;"></span>効率化可能
+                    <span style="display: inline-block; width: 12px; height: 12px; background: #e74c3c; border-radius: 50%; margin: 0 5px 0 15px;"></span>要検討
+                </div>
+            </div>
+            
+            <button class="reset-btn" onclick="resetAll()">すべてクリア</button>
+        </div>
+    </div>
+
+    <script>
+        let works = [];
+        let chart = null;
+        
+        // 作業を追加
+        function addWork() {
+            const name = document.getElementById('workName').value.trim();
+            const freq = parseFloat(document.getElementById('frequency').value);
+            const duration = parseInt(document.getElementById('duration').value);
+            
+            if (!name || !freq || !duration) {
+                alert('すべて入力してください');
+                return;
+            }
+            
+            const weeklyHours = (freq * duration) / 60;
+            
+            const work = {
+                id: Date.now(),
+                name: name,
+                frequency: freq,
+                duration: duration,
+                weeklyHours: Math.round(weeklyHours * 10) / 10
+            };
+            
+            works.push(work);
+            
+            // 即座に診断結果を表示
+            const diagnosis = diagnoseAutomation(name, freq, duration);
+            showInstantDiagnosis(work, diagnosis);
+            
+            updateDisplay();
+            clearInputs();
+            saveToStorage();
+        }
+        
+        // 即座に診断結果を表示
+        function showInstantDiagnosis(work, diagnosis) {
+            const message = `
+📊 「${work.name}」の診断完了！
+
+🎯 自動化可能性: ${diagnosis.score}% (${diagnosis.levelText})
+
+💡 具体的な改善案:
+${diagnosis.recommendation}
+
+🛠️ 次にすべきこと:
+${diagnosis.specificAction}
+
+⏱️ 現在の負荷: 週${work.weeklyHours}時間
+
+${diagnosis.score >= 70 ? '✅ 【優先度：高】すぐにRPA/自動化を検討することを強くお勧めします！' : 
+  diagnosis.score >= 40 ? '⚡ 【優先度：中】効率化により大幅な時間削減が期待できます。' : 
+  '🤔 【優先度：低】現状では人間の作業が適していますが、手順の見直しは可能です。'}
+            `;
+            
+            setTimeout(() => alert(message), 500);
+        }
+        
+        // 作業を削除
+        function deleteWork(id) {
+            if (confirm('この作業を削除しますか？')) {
+                works = works.filter(work => work.id !== id);
+                updateDisplay();
+                saveToStorage();
+            }
+        }
+        
+        // 画面を更新
+        function updateDisplay() {
+            updateWorkList();
+            updateSummary();
+            updateChart();
+            updateDiagnosis();
+        }
+        
+        // 診断結果を更新
+        function updateDiagnosis() {
+            const diagnosisDiv = document.getElementById('diagnosis');
+            const container = document.getElementById('diagnosisResults');
+            
+            if (works.length === 0) {
+                diagnosisDiv.style.display = 'none';
+                return;
+            }
+            
+            // 自動化スコア順にソート
+            const sortedWorks = works.map(work => ({
+                ...work,
+                diagnosis: diagnoseAutomation(work.name, work.frequency, work.duration)
+            })).sort((a, b) => b.diagnosis.score - a.diagnosis.score);
+            
+            container.innerHTML = sortedWorks.map((work, index) => {
+                const d = work.diagnosis;
+                return `
+                    <div class="diagnosis-item ${d.level}">
+                        <div class="diagnosis-title">
+                            ${index + 1}. ${work.name}
+                            <span class="diagnosis-score ${d.level}">${d.levelText} ${d.score}%</span>
+                        </div>
+                        <div class="diagnosis-details">
+                            週${work.weeklyHours}時間 (${getFrequencyText(work.frequency)} × ${work.duration}分)
+                            ${d.reasons.length > 0 ? '・' + d.reasons.join('・') : ''}
+                        </div>
+                        <div class="diagnosis-recommendation">
+                            💡 効果予測: ${d.recommendation}
+                        </div>
+                        <div class="diagnosis-recommendation" style="margin-top: 8px; background: rgba(52, 152, 219, 0.15);">
+                            🛠️ 具体的なアクション: ${d.specificAction}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            diagnosisDiv.style.display = 'block';
+        }
+        
+        // 作業一覧を更新
+        function updateWorkList() {
+            const container = document.getElementById('workItems');
+            
+            if (works.length === 0) {
+                container.innerHTML = '<div class="no-data">まだ作業が記録されていません</div>';
+                return;
+            }
+            
+            container.innerHTML = works.map(work => {
+                const freqText = getFrequencyText(work.frequency);
+                const diagnosis = diagnoseAutomation(work.name, work.frequency, work.duration);
+                
+                return `
+                    <div class="work-item">
+                        <div class="work-name">${work.name}</div>
+                        <div class="work-details">${freqText} × ${work.duration}分</div>
+                        <div class="work-time">週${work.weeklyHours}時間</div>
+                        <div class="automation-score" style="background: ${diagnosis.color}; position: absolute; right: 20px; top: 45px; color: white; padding: 4px 8px; border-radius: 12px; font-size: 0.8em;">
+                            ${diagnosis.levelText} ${diagnosis.score}%
+                        </div>
+                        <button class="delete-btn" onclick="deleteWork(${work.id})">削除</button>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        // 頻度をテキストに変換
+        function getFrequencyText(freq) {
+            if (freq === 5) return '毎日';
+            if (freq === 3) return '週3回';
+            if (freq === 2) return '週2回';
+            if (freq === 1) return '週1回';
+            if (freq === 0.5) return '月数回';
+            return `週${freq}回`;
+        }
+        
+        // サマリーを更新
+        function updateSummary() {
+            const summaryDiv = document.getElementById('summary');
+            
+            if (works.length === 0) {
+                summaryDiv.style.display = 'none';
+                return;
+            }
+            
+            const totalWeekly = works.reduce((sum, work) => sum + work.weeklyHours, 0);
+            const totalMonthly = totalWeekly * 4.3;
+            
+            document.getElementById('weeklyHours').textContent = totalWeekly.toFixed(1);
+            document.getElementById('monthlyHours').textContent = Math.round(totalMonthly);
+            document.getElementById('taskCount').textContent = works.length;
+            
+            summaryDiv.style.display = 'block';
+        }
+        
+        // 自動化可能性を診断
+        function diagnoseAutomation(workName, frequency, duration) {
+            const weeklyMinutes = frequency * duration;
+            let score = 0;
+            let reasons = [];
+            let recommendation = '';
+            let specificAction = '';
+            
+            // 基本スコア（時間と頻度）
+            if (weeklyMinutes >= 120) { // 週2時間以上
+                score += 30;
+                reasons.push('週2時間以上の作業');
+            }
+            if (frequency >= 3) { // 週3回以上
+                score += 25;
+                reasons.push('頻繁に実施');
+            }
+            
+            // 作業内容による詳細判定
+            const name = workName.toLowerCase();
+            if (name.includes('データ') || name.includes('入力') || name.includes('転記') || name.includes('コピー')) {
+                score += 40;
+                reasons.push('データ処理作業');
+                recommendation = 'RPA導入で80-95%削減可能';
+                specificAction = 'Power Automate Desktop や UiPath等のRPAツールを検討してください';
+            } else if (name.includes('メール') || name.includes('連絡') || name.includes('返信')) {
+                score += 30;
+                reasons.push('定型的なやりとり');
+                recommendation = 'テンプレート化・自動返信で50-70%削減可能';
+                specificAction = 'Outlookの定型文機能や自動振り分けルールを設定してください';
+            } else if (name.includes('集計') || name.includes('計算') || name.includes('レポート') || name.includes('報告')) {
+                score += 35;
+                reasons.push('計算・集計作業');
+                recommendation = 'Excel自動化・BIツールで70-90%削減可能';
+                specificAction = 'Excelマクロ作成、またはPower BIなどのBIツール導入を検討してください';
+            } else if (name.includes('請求') || name.includes('発注') || name.includes('書類') || name.includes('契約')) {
+                score += 35;
+                reasons.push('定型書類処理');
+                recommendation = '電子化・自動処理で60-80%削減可能';
+                specificAction = 'クラウド請求書システムや電子契約サービスの導入を検討してください';
+            } else if (name.includes('在庫') || name.includes('発注') || name.includes('管理')) {
+                score += 30;
+                reasons.push('管理業務');
+                recommendation = '管理システム導入で40-70%削減可能';
+                specificAction = '在庫管理システムや発注システムの導入を検討してください';
+            } else if (name.includes('電話') || name.includes('接客') || name.includes('相談') || name.includes('対応')) {
+                score += 10;
+                reasons.push('人との対話が必要');
+                recommendation = 'FAQ・チャットボット等で一部支援可能';
+                specificAction = 'よくある質問のFAQ作成やチャットボット導入で対応数を減らせます';
+            } else {
+                score += 20;
+                recommendation = '業務内容の詳細確認が必要';
+                specificAction = '作業手順を詳しく分析し、定型部分の自動化を検討してください';
+            }
+            
+            // スコア調整
+            score = Math.min(100, Math.max(0, score));
+            
+            // 判定レベル
+            let level = 'low';
+            let levelText = '要検討';
+            let color = '#e74c3c';
+            
+            if (score >= 70) {
+                level = 'high';
+                levelText = 'RPA導入推奨';
+                color = '#27ae60';
+            } else if (score >= 40) {
+                level = 'medium';
+                levelText = '効率化可能';
+                color = '#f39c12';
+            }
+            
+            return {
+                score,
+                level,
+                levelText,
+                color,
+                reasons,
+                recommendation,
+                specificAction
+            };
+        }
+
+        // チャートを更新
+        function updateChart() {
+            const canvas = document.getElementById('workChart');
+            const noData = document.getElementById('noData');
+            
+            if (works.length === 0) {
+                canvas.style.display = 'none';
+                noData.style.display = 'block';
+                if (chart) {
+                    chart.destroy();
+                    chart = null;
+                }
+                return;
+            }
+            
+            canvas.style.display = 'block';
+            noData.style.display = 'none';
+            
+            if (chart) {
+                chart.destroy();
+            }
+            
+            const ctx = canvas.getContext('2d');
+            chart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: works.map(work => work.name),
+                    datasets: [{
+                        data: works.map(work => work.weeklyHours),
+                        backgroundColor: works.map(work => {
+                            const diagnosis = diagnoseAutomation(work.name, work.frequency, work.duration);
+                            return diagnosis.color;
+                        }),
+                        borderWidth: 2,
+                        borderColor: '#ffffff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                padding: 20,
+                                usePointStyle: true
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const work = works[context.dataIndex];
+                                    const diagnosis = diagnoseAutomation(work.name, work.frequency, work.duration);
+                                    return [
+                                        context.label + ': ' + context.parsed + '時間/週',
+                                        '自動化度: ' + diagnosis.score + '% (' + diagnosis.levelText + ')'
+                                    ];
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // 入力フィールドをクリア
+        function clearInputs() {
+            document.getElementById('workName').value = '';
+            document.getElementById('frequency').value = '';
+            document.getElementById('duration').value = '';
+        }
+        
+        // すべてクリア
+        function resetAll() {
+            if (confirm('すべての記録を削除しますか？')) {
+                works = [];
+                updateDisplay();
+                saveToStorage();
+            }
+        }
+        
+        // ローカルストレージに保存
+        function saveToStorage() {
+            localStorage.setItem('workRecords', JSON.stringify(works));
+        }
+        
+        // ローカルストレージから読み込み
+        function loadFromStorage() {
+            const saved = localStorage.getItem('workRecords');
+            if (saved) {
+                works = JSON.parse(saved);
+                updateDisplay();
+            }
+        }
+        
+        // ページ読み込み時の処理
+        document.addEventListener('DOMContentLoaded', function() {
+            loadFromStorage();
+            
+            // デモ用（削除可能）
+            setTimeout(() => {
+                if (works.length === 0 && confirm('デモ用のサンプルデータを表示しますか？')) {
+                    const samples = [
+                        { name: 'メールチェック', frequency: 5, duration: 20 },
+                        { name: 'データ入力', frequency: 3, duration: 45 },
+                        { name: '電話対応', frequency: 5, duration: 15 }
+                    ];
+                    
+                    samples.forEach(sample => {
+                        const weeklyHours = (sample.frequency * sample.duration) / 60;
+                        works.push({
+                            id: Date.now() + Math.random(),
+                            name: sample.name,
+                            frequency: sample.frequency,
+                            duration: sample.duration,
+                            weeklyHours: Math.round(weeklyHours * 10) / 10
+                        });
+                    });
+                    
+                    updateDisplay();
+                    saveToStorage();
+                }
+            }, 1000);
+        });
+    </script>
+</body>
+</html>
